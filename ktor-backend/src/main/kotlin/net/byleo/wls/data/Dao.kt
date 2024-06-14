@@ -7,6 +7,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 private val LINE_ORDER: Array<Pair<Expression<*>, SortOrder>> = arrayOf(
     Lines.type to SortOrder.ASC,
@@ -78,6 +79,40 @@ class Dao {
 
     suspend fun getLines(): List<Line> = Database.dbQuery {
         Lines.selectAll().orderBy(*LINE_ORDER).map(::resultRowToLine)
+    }
+
+    suspend fun getStatistic(
+        filter: DisturbanceFilter = DisturbanceFilter()
+    ) = Database.dbQuery {
+        val disturbances = getDisturbances(filter)
+
+        val disturbanceMonthData = mutableListOf<DisturbanceMonthData>()
+
+        disturbances.forEach { row ->
+            val monthsOnly = disturbanceMonthData.map { it.month }
+
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
+            val rowToString = row.startTime.toString()
+            val monthString = LocalDateTime.parse(rowToString, DateTimeFormatter.ISO_DATE_TIME).format(formatter)
+
+            // Jahr und Monat wird geparst
+            val (year, month) = monthString.split("-").map { it.toInt() }
+
+            // Individueller Key für jeden Monat eines bestimmten Jahres
+            // z.B 202402 =  Jahr 2024 Februar
+            val monthKey = year * 100 + month
+
+            val disturbanceIndex = monthsOnly.indexOf(monthKey)
+
+            if (disturbanceIndex == -1) {
+                disturbanceMonthData.add(DisturbanceMonthData(0, monthKey))
+            } else {
+                disturbanceMonthData[disturbanceIndex].amountDisturbances++;
+            }
+        }
+
+        disturbanceMonthData
+
     }
 
     suspend fun getLineById(id: String): Line? = Database.dbQuery {

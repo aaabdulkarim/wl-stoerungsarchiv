@@ -2,24 +2,54 @@
   <header>
     <HeaderNav :active-index="1" />
   </header>
-  <main class="q-my-xl q-mx-md">
-    <div class="q-mx-auto col-8 bg-white shadow-4 rounded-borders q-pa-md" style="max-width: 800px">
-      <div class="full-width">
-        <h1>Statistik</h1>
-        <p class="text-grey">Noch in Arbeit...</p>
-      </div>
+  <main class="q-my-lg">
+    <div class="q-mx-auto col-8 row" style="max-width: 1100px">
+      <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
+      <StatisticChart class="col-md-8 col-12"  ref="chartPanel" />
     </div>
   </main>
 </template>
 
 <script>
 import HeaderNav from '@/components/HeaderNav.vue'
+import FilterSortPanel from '@/components/FilterSortPanel.vue'
+import StatisticChart from '@/components/StatisticChart.vue'
 
 export default {
   name: 'StatisticsView',
 
   components: {
-    HeaderNav
+    HeaderNav,
+    FilterSortPanel,
+    StatisticChart
+  },
+
+  async mounted () {
+
+  },
+
+  methods: {
+    updateStatistics (params) {
+      this.$refs.chartPanel.update(params)
+    },
+
+    getLineColor (id, type) {
+      const colors = ['blue', 'red', 'grey', 'purple']
+      if (type === 2) {
+        if (id.includes('U1')) { return 'red' }
+        if (id.includes('U2')) { return 'pink' }
+        if (id.includes('U3')) { return 'orange' }
+        if (id.includes('U4')) { return 'green' }
+        if (id.includes('U5')) { return 'teal' }
+        if (id.includes('U6')) { return 'brown' }
+      }
+      return colors[type]
+    }
+
+  },
+
+  data () {
+
   }
 }
 </script>

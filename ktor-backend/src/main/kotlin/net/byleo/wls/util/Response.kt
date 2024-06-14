@@ -2,6 +2,7 @@ package net.byleo.wls.util
 
 import kotlinx.serialization.Serializable
 import net.byleo.wls.models.Disturbance
+import net.byleo.wls.models.DisturbanceMonthData
 import net.byleo.wls.models.Line
 
 @Serializable
@@ -22,4 +23,9 @@ data class DisturbanceResponse(
 @Serializable
 data class LinesResponse(
     val lines: List<Line>
+)
+
+@Serializable
+data class StatisticResponse(
+    val statistic: List<DisturbanceMonthData>
 )
