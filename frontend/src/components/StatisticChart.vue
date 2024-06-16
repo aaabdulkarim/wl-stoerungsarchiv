@@ -2,7 +2,7 @@
     <div class="q-pa-md ">
         <div class="bg-white shadow-4 rounded-borders q-pa-md">
 
-            <h2>Statistik</h2>
+            <h2>{{ chartName }}</h2>
             <div v-if="loading" class="row justify-center">
                 <q-spinner size="md" color="primary" />
             </div>
@@ -10,25 +10,34 @@
             <div v-else>
                 <apexchart type="bar" :options="options" :series="series"></apexchart>
             </div>
+
+            <div v-if="expandCharts">
+              <!-- Create new Apexcharts for years -->
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+/* eslint-disable */
 import VueApexCharts from 'vue3-apexcharts'
 
 export default {
   name: 'StatisticChart',
+  
+  props: {
+    chartName : String
+  },
   components: {
     apexchart: VueApexCharts
   },
   methods: {
-    async update (params) {
-      this.loading = true
-      const statisticsMap = await this.fetchStatistics(params)
-      const xAxisData = await statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
-      const yAxisData = await statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
-
+    /**
+     * Diese Methode wird benutzt um die Daten direkt zu setzen. 
+     * @param {*} xAxisData 
+     * @param {*} yAxisData 
+     */
+    setChartData(xAxisData, yAxisData) {
       this.options = {
         ...this.options,
         xaxis: {
@@ -38,15 +47,33 @@ export default {
 
       this.series[0].data = yAxisData
 
-      this.loading = false
+
+
+      this.loading = false;
+    },
+    async update (params) {
+      this.loading = true
+      const statisticsMap = await this.fetchStatistics(params)
+      const checkMultipleYearsResult = this.checkMultipleYears(statisticsMap)
+
+      
+        
+      this.$emit("multipleYears", checkMultipleYearsResult)
+      
+      const xAxisData = await statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
+      const yAxisData = await statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
+
+      this.setChartData(xAxisData, yAxisData)
     },
 
     getCategoryString (monthkey) {
       const monthsArray = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
       const monthKeyStr = String(monthkey)
       const monthInt = monthKeyStr.substring(4, 6)
-      const yearString = monthKeyStr.replace(monthInt, '')
+      const yearString = monthKeyStr.substring(0, 4)
 
+      console.log(monthkey)
+      
       // Index entsprechend des Monats
       const monthString = monthsArray[Number(monthInt) - 1]
 
@@ -65,15 +92,13 @@ export default {
         const toDate = `${toDateArr[2]}-${toDateArr[1]}-${toDateArr[0]}`
         let url = `http://0.0.0.0:5000/statistics?from=${fromDate}&to=${toDate}&${params.sort.value}type=${params.types.toString()}&line=${params.lines.toString()}`
 
-        console.log(url)
         if (params.onlyOpenDisturbances) {
-          url += '&active=true'
+          url += '&active=false'
         }
 
         // WICHTIG!!!!! Auf Server-gehosteten Backend unnötig
         const res = await fetch(url)
         const data = await res.json()
-        console.table(data.statistic)
         if (!('error' in data)) {
           return data.statistic
         }
@@ -83,25 +108,44 @@ export default {
       return []
     },
 
-
     /**
      * Überdenken der Response:
      * Wenn für mehr als 2 Jahre gefiltert wird,
      * dann soll ein Array von YearData Objekten zurückgegeben
-     * und ein Array von Arrays, welche die MonthData Objekte speichern. 
-     * Jedes dieser Array hat einen Jahres Identifikator 
+     * und ein Array von Arrays, welche die MonthData Objekte speichern.
+     * Jedes dieser Array hat einen Jahres Identifikator
+     *
      */
-    checkMultipleYears(monthList){
+    checkMultipleYears (statisticsMap) {
+      // Wird bestehen aus einem Array von {"yearString": amountDisturbances} Objekten
+      let statisticsYearly = []
+      let differentYears = -1
 
-        let differentYears = 0;
-        var yearList = []
-        monthList.forEach(element => {
-            
-            const yearString = element.substring(0, 4)
-            parseInt(yearString)
+      const years = []
+      const disturbances = []
 
-        });
+      statisticsMap.forEach(element => {
+        const yearString = String(element.month).substring(0, 4)
+        const amountDisturbance = element.amountDisturbances
+
+        if (!years.includes(yearString)) {
+          years.push(yearString)
+          disturbances.push(amountDisturbance)
+          differentYears++
+        } else {
+          disturbances[differentYears] += amountDisturbance
+        }
+      })
+
+      statisticsYearly = years.map((year, index) => {
+        return { yearString: year, amountDisturbances: disturbances[index] }
+      })
+
+      console.log(differentYears)
+      if (differentYears <= 1) return null
+      else return {years: years, amountDisturbances: disturbances}
     }
+
   },
 
   data () {
@@ -141,7 +185,8 @@ export default {
       series: [{
         name: 'statistics',
         data: []
-      }]
+      }],
+      
     }
   }
 }

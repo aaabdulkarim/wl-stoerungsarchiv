@@ -5,12 +5,16 @@
   <main class="q-my-lg">
     <div class="q-mx-auto col-8 row" style="max-width: 1100px">
       <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
-      <StatisticChart class="col-md-8 col-12"  ref="chartPanel" />
+      <StatisticChart class="col-md-8 col-12" chartName="Statistik"
+        @multipleYears="setYearChartData" ref="chartPanel" />
+      <StatisticChart class="col-md-8 col-12" chartName="Statistik Jahre"
+        v-show="showYearlyChart" ref="yearChartPanel" />
     </div>
   </main>
 </template>
 
 <script>
+/* eslint-disable */
 import HeaderNav from '@/components/HeaderNav.vue'
 import FilterSortPanel from '@/components/FilterSortPanel.vue'
 import StatisticChart from '@/components/StatisticChart.vue'
@@ -23,11 +27,6 @@ export default {
     FilterSortPanel,
     StatisticChart
   },
-
-  async mounted () {
-
-  },
-
   methods: {
     updateStatistics (params) {
       this.$refs.chartPanel.update(params)
@@ -44,12 +43,22 @@ export default {
         if (id.includes('U6')) { return 'brown' }
       }
       return colors[type]
-    }
+    },
 
+    setYearChartData (checkMultipleYearsResult) {
+      if(checkMultipleYearsResult !== null){
+        this.showYearlyChart = true 
+        this.$refs.yearChartPanel.setChartData(checkMultipleYearsResult.years, checkMultipleYearsResult.amountDisturbances)
+      } else {
+        this.showYearlyChart = false
+      }
+    }
   },
 
   data () {
-
+    return {
+      showYearlyChart: false
+    }
   }
 }
 </script>

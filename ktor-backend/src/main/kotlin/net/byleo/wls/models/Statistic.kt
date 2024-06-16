@@ -11,6 +11,7 @@ data class DisturbanceMonthData(
 
     // wird aus jahr + monat bestehen z.b
     // 202402; Jahr 2024 Februar
+    // Eventuell zu einem String machen
     val month: Int,
 )
 
