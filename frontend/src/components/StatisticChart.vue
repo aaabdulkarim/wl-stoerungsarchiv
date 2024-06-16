@@ -54,11 +54,20 @@ export default {
     async update (params) {
       this.loading = true
       const statisticsMap = await this.fetchStatistics(params)
-      const checkMultipleYearsResult = this.checkMultipleYears(statisticsMap)
-
+      let checkMultipleYearsResult = null;
+      // From Date verarbeiten
+      let [dayFrom, monthFrom, yearFrom] = params.fromDate.split('.').map(Number);
       
-        
+      // To Date verarbeiten
+      let [dayTo, monthTo, yearTo] = params.toDate.split('.').map(Number);
+      
+
+      if(yearTo - yearFrom >= 2){
+        checkMultipleYearsResult = this.checkMultipleYears(statisticsMap)
+
+      }
       this.$emit("multipleYears", checkMultipleYearsResult)
+      
       
       const xAxisData = await statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
       const yAxisData = await statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
@@ -71,8 +80,6 @@ export default {
       const monthKeyStr = String(monthkey)
       const monthInt = monthKeyStr.substring(4, 6)
       const yearString = monthKeyStr.substring(0, 4)
-
-      console.log(monthkey)
       
       // Index entsprechend des Monats
       const monthString = monthsArray[Number(monthInt) - 1]
