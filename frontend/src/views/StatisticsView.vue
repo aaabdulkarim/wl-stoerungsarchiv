@@ -3,14 +3,19 @@
     <HeaderNav :active-index="1" />
   </header>
   <main class="q-my-lg">
-    <div class="q-mx-auto col-8 row" style="max-width: 1100px">
+  <div class="q-mx-auto col-8" style="max-width: 1100px">
+    <div class="row">
       <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
-      <StatisticChart class="col-md-8 col-12" chartName="Statistik"
-        @multipleYears="setYearChartData" ref="chartPanel" />
-      <StatisticChart class="col-md-8 col-12" chartName="Statistik Jahre"
-        v-show="showYearlyChart" ref="yearChartPanel" />
+      <div class="col-md-8 col-12">
+        <StatisticChart chartName="Statistik"
+          @multipleYears="setYearChartData" ref="chartPanel" />
+        <StatisticChart chartName="Statistik Jahre"
+          v-show="showYearlyChart" ref="yearChartPanel" />
+      </div>
     </div>
-  </main>
+  </div>
+</main>
+
 </template>
 
 <script>
