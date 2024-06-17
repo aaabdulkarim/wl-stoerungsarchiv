@@ -7,12 +7,14 @@
                 <q-spinner size="md" color="primary" />
             </div>
 
-            <div v-else>
-                <apexchart type="bar" :options="options" :series="series"></apexchart>
+            <div v-else-if="noValues">
+                <h3>
+                  Keine Störungen für diesen Zeitraum
+                </h3>
             </div>
 
-            <div v-if="expandCharts">
-              <!-- Create new Apexcharts for years -->
+            <div v-else-if="!noValues || !loading">
+                <apexchart type="bar" :options="options" :series="series"></apexchart>
             </div>
         </div>
     </div>
@@ -24,7 +26,49 @@ import VueApexCharts from 'vue3-apexcharts'
 
 export default {
   name: 'StatisticChart',
-  
+  data () {
+    return {
+      loading: true,
+      noValues: false,
+
+      options: {
+
+        plotOptions: {
+          bar: {
+            distributed: false
+          }
+        },
+        colors:
+                    ['#e30014'],
+        dataLabels: {
+          enabled: false
+        },
+        legend: {
+          show: false
+        },
+        chart: {
+          id: 'statistics-chart'
+        },
+        xaxis: {
+          categories: []
+        },
+        // Damit keine Nachkommazahlen dargestellt werden
+        yaxis: {
+          labels: {
+            formatter: function (value) {
+              return parseInt(value)
+            }
+          }
+        }
+      },
+      series: [{
+        name: 'statistics',
+        data: []
+      }],
+      
+    }
+  },
+
   props: {
     chartName : String
   },
@@ -38,6 +82,7 @@ export default {
      * @param {*} yAxisData 
      */
     setChartData(xAxisData, yAxisData) {
+      console.log("Triggered ");
       this.options = {
         ...this.options,
         xaxis: {
@@ -45,16 +90,18 @@ export default {
         }
       }
 
-      this.series[0].data = yAxisData
-
-
-
+      this.series[0].data = yAxisData;
       this.loading = false;
+      this.noValues = false;
+
     },
     async update (params) {
-      this.loading = true
+      this.loading = true;
+      this.noValues = true;
+
       const statisticsMap = await this.fetchStatistics(params)
       let checkMultipleYearsResult = null;
+
       // From Date verarbeiten
       let [dayFrom, monthFrom, yearFrom] = params.fromDate.split('.').map(Number);
       
@@ -64,15 +111,19 @@ export default {
 
       if(yearTo - yearFrom >= 2){
         checkMultipleYearsResult = this.checkMultipleYears(statisticsMap)
-
       }
       this.$emit("multipleYears", checkMultipleYearsResult)
       
       
       const xAxisData = await statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
       const yAxisData = await statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
-
-      this.setChartData(xAxisData, yAxisData)
+      
+      if(yAxisData.length == 1 && yAxisData[0]==0){
+        this.noValues = true;
+        this.loading = false
+      } else {
+        this.setChartData(xAxisData, yAxisData)
+      }
     },
 
     getCategoryString (monthkey) {
@@ -153,49 +204,7 @@ export default {
       else return {years: years, amountDisturbances: disturbances}
     }
 
-  },
-
-  data () {
-    return {
-      loading: true,
-
-      options: {
-
-        plotOptions: {
-          bar: {
-            distributed: false
-          }
-        },
-        colors:
-                    ['#e30014'],
-        dataLabels: {
-          enabled: false
-        },
-        legend: {
-          show: false
-        },
-        chart: {
-          id: 'statistics-chart'
-        },
-        xaxis: {
-          categories: []
-        },
-        // Damit keine Nachkommazahlen dargestellt werden
-        yaxis: {
-          labels: {
-            formatter: function (value) {
-              return parseInt(value)
-            }
-          }
-        }
-      },
-      series: [{
-        name: 'statistics',
-        data: []
-      }],
-      
-    }
-  }
+  }, 
 }
 </script>
 
