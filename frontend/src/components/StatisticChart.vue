@@ -2,7 +2,7 @@
     <div class="q-pa-md ">
         <div class="bg-white shadow-4 rounded-borders q-pa-md">
 
-            <h2>{{ chartName }}</h2>
+            <h2>{{ chartTitle }}</h2>
             <div v-if="loading" class="row justify-center">
                 <q-spinner size="md" color="primary" />
             </div>
@@ -70,10 +70,17 @@ export default {
   },
 
   props: {
-    chartName : String
+    chartTitle : String,
+    xAxisData : Array,
+    yAxisData : Array
   },
   components: {
     apexchart: VueApexCharts
+  },
+  mounted() {
+    if(this.$props.xAxisData !== undefined && this.$props.yAxisData !== undefined){
+      this.setChartData(this.$props.xAxisData, this.$props.yAxisData)
+    }
   },
   methods: {
     /**
@@ -82,7 +89,6 @@ export default {
      * @param {*} yAxisData 
      */
     setChartData(xAxisData, yAxisData) {
-      console.log("Triggered ");
       this.options = {
         ...this.options,
         xaxis: {
@@ -118,7 +124,7 @@ export default {
       const xAxisData = await statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
       const yAxisData = await statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
       
-      if(yAxisData.length == 1 && yAxisData[0]==0){
+      if(yAxisData.length == 0){
         this.noValues = true;
         this.loading = false
       } else {

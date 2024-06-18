@@ -7,9 +7,13 @@
     <div class="row">
       <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
       <div class="col-md-8 col-12">
-        <StatisticChart chartName="Statistik"
+
+        <StatisticChart chartTitle="Statistik"
           @multipleYears="setYearChartData" ref="chartPanel" />
-        <StatisticChart chartName="Statistik Jahre"
+
+        <!-- <ChartCarousel />  -->
+
+        <StatisticChart chartTitle="Statistik Jahre"
           v-show="showYearlyChart" ref="yearChartPanel" />
       </div>
     </div>
@@ -23,6 +27,7 @@
 import HeaderNav from '@/components/HeaderNav.vue'
 import FilterSortPanel from '@/components/FilterSortPanel.vue'
 import StatisticChart from '@/components/StatisticChart.vue'
+import ChartCarousel from '@/components/ChartCarousel.vue'
 
 export default {
   name: 'StatisticsView',
