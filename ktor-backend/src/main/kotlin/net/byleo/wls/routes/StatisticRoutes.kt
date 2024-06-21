@@ -74,3 +74,32 @@ fun Route.statisticRouting() {
 
     }
 }
+
+//fun checkMultipleYears(statisticsMap: List<DisturbanceMonthData>): Map<String, List<Int>>? {
+//    val statisticsYearly = mutableListOf<Map<String, Int>>()
+//    var differentYears = -1
+//
+//    val years = mutableListOf<String>()
+//    val disturbances = mutableListOf<Int>()
+//
+//    statisticsMap.forEach { element ->
+//        val yearString = element.month.substring(0, 4)
+//        val amountDisturbance = element.amountDisturbances
+//
+//        if (!years.contains(yearString)) {
+//            years.add(yearString)
+//            disturbances.add(amountDisturbance)
+//            differentYears++
+//        } else {
+//            disturbances[differentYears] += amountDisturbance
+//        }
+//    }
+//
+//    if (differentYears <= 1) return null
+//
+//    val resultYears = years.mapIndexed { index, year ->
+//        year to disturbances[index]
+//    }.toMap()
+//
+//    return mapOf("years" to resultYears.keys.toList(), "amountDisturbances" to resultYears.values.toList())
+//}

@@ -101,11 +101,12 @@ class Dao {
             // Individueller Key für jeden Monat eines bestimmten Jahres
             // z.B 202402 =  Jahr 2024 Februar
             val monthKey = year * 100 + month
+            val monthKeyStr = monthKey.toString()
 
-            val disturbanceIndex = monthsOnly.indexOf(monthKey)
+            val disturbanceIndex = monthsOnly.indexOf(monthKeyStr)
 
             if (disturbanceIndex == -1) {
-                disturbanceMonthData.add(DisturbanceMonthData(0, monthKey))
+                disturbanceMonthData.add(DisturbanceMonthData(0, monthKeyStr))
             } else {
                 disturbanceMonthData[disturbanceIndex].amountDisturbances++;
             }

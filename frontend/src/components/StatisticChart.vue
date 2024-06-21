@@ -8,9 +8,9 @@
             </div>
 
             <div v-else-if="noValues">
-                <h3>
-                  Keine Störungen für diesen Zeitraum
-                </h3>
+                <div class="text-center text-grey">
+                  Keine Störungen passend zum gesetzten Filter gefunden
+                </div>
             </div>
 
             <div v-else-if="!noValues || !loading">
@@ -154,8 +154,8 @@ export default {
         const fromDate = `${fromDateArr[2]}-${fromDateArr[1]}-${fromDateArr[0]}`
         const toDateArr = params.toDate.split('.')
         const toDate = `${toDateArr[2]}-${toDateArr[1]}-${toDateArr[0]}`
-        let url = `http://0.0.0.0:5000/statistics?from=${fromDate}&to=${toDate}&${params.sort.value}type=${params.types.toString()}&line=${params.lines.toString()}`
-
+        let url = `http://localhost:5000/statistics?from=${fromDate}&to=${toDate}&${params.sort.value}type=${params.types.toString()}&line=${params.lines.toString()}`
+        console.log(url);
         if (params.onlyOpenDisturbances) {
           url += '&active=false'
         }
@@ -181,7 +181,7 @@ export default {
      *
      */
     checkMultipleYears (statisticsMap) {
-      // Wird bestehen aus einem Array von {"yearString": amountDisturbances} Objekten
+      // Wird bestehen aus einem Array von {"yearString": year, "amountDisturbances": amountDisturbances} Objekten
       let statisticsYearly = []
       let differentYears = -1
 
