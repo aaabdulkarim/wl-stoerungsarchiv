@@ -27,5 +27,7 @@ data class LinesResponse(
 
 @Serializable
 data class StatisticResponse(
-    val statistic: List<DisturbanceMonthData>
+    val statistic: List<DisturbanceMonthData>,
+    val monthByYearStatistic : Map<String, List<DisturbanceMonthData>>?,
+    val yearStatistic : Map<String, Int>?
 )
