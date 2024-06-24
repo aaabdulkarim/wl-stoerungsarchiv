@@ -8,8 +8,7 @@
       <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
       <div class="col-md-8 col-12">
 
-        <StatisticChart chartTitle="Statistik"
-          @multipleYears="setYearChartData" ref="chartPanel" />
+        <StatisticChart chartTitle="Statistik" ref="chartPanel" />
 
         <!-- <ChartCarousel />  -->
 
@@ -38,8 +37,51 @@ export default {
     StatisticChart
   },
   methods: {
-    updateStatistics (params) {
-      this.$refs.chartPanel.update(params)
+    async updateStatistics (params) {
+      this.$refs.chartPanel.setErrorValues()
+
+      const statisticsMap = await this.fetchStatistics(params)
+
+      console.table(statisticsMap.statistic)
+      this.$refs.chartPanel.setChartDataMap(statisticsMap.statistic)
+      
+
+      if(statisticsMap.yearStatistic != null){
+        this.setYearChartData(statisticsMap.yearStatistic)
+      }
+
+      if(statisticsMap.yearStatistic != null) {
+        // Set ChartCarousel Data
+      }
+
+    },
+
+    async fetchStatistics (params) {
+      if (params.types.length === 0 || params.lines.length === 0) {
+        return []
+      }
+      try {
+        // date parsing
+        const fromDateArr = params.fromDate.split('.')
+        const fromDate = `${fromDateArr[2]}-${fromDateArr[1]}-${fromDateArr[0]}`
+        const toDateArr = params.toDate.split('.')
+        const toDate = `${toDateArr[2]}-${toDateArr[1]}-${toDateArr[0]}`
+        let url = `http://localhost:5000/statistics?from=${fromDate}&to=${toDate}&${params.sort.value}type=${params.types.toString()}&line=${params.lines.toString()}`
+        console.log(url);
+        if (params.onlyOpenDisturbances) {
+          url += '&active=false'
+        }
+
+        // WICHTIG!!!!! Auf Server-gehosteten Backend unnötig
+        const res = await fetch(url)
+        const data = await res.json()
+        if (!('error' in data)) {
+          return data
+        }
+      } catch (err) {
+        console.log(err)
+      }
+      return []
     },
 
     getLineColor (id, type) {
@@ -55,10 +97,12 @@ export default {
       return colors[type]
     },
 
-    setYearChartData (checkMultipleYearsResult) {
-      if(checkMultipleYearsResult !== null){
+    setYearChartData (yearStatisticMap) {
+      if(yearStatisticMap !== null){
+        const xAxisData = Object.keys(yearStatisticMap);
+        const yAxisData = Object.values(yearStatisticMap);
         this.showYearlyChart = true 
-        this.$refs.yearChartPanel.setChartData(checkMultipleYearsResult.years, checkMultipleYearsResult.amountDisturbances)
+        this.$refs.yearChartPanel.setChartData(xAxisData, yAxisData)
       } else {
         this.showYearlyChart = false
       }

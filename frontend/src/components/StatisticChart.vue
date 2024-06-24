@@ -101,35 +101,25 @@ export default {
       this.noValues = false;
 
     },
-    async update (params) {
-      this.loading = true;
-      this.noValues = true;
 
-      const statisticsMap = await this.fetchStatistics(params)
-      let checkMultipleYearsResult = null;
+    setChartDataMap(statisticsMap) {
 
-      // From Date verarbeiten
-      let [dayFrom, monthFrom, yearFrom] = params.fromDate.split('.').map(Number);
-      
-      // To Date verarbeiten
-      let [dayTo, monthTo, yearTo] = params.toDate.split('.').map(Number);
-      
-
-      if(yearTo - yearFrom >= 2){
-        checkMultipleYearsResult = this.checkMultipleYears(statisticsMap)
-      }
-      this.$emit("multipleYears", checkMultipleYearsResult)
-      
-      
-      const xAxisData = await statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
-      const yAxisData = await statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
+      const xAxisData = statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
+      const yAxisData = statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
       
       if(yAxisData.length == 0){
         this.noValues = true;
-        this.loading = false
+        this.loading = false;
       } else {
         this.setChartData(xAxisData, yAxisData)
       }
+
+    },
+
+
+    setErrorValues () {
+      this.loading = true;
+      this.noValues = true;
     },
 
     getCategoryString (monthkey) {
@@ -144,71 +134,7 @@ export default {
       return `${monthString} ${yearString}`
     },
 
-    async fetchStatistics (params) {
-      if (params.types.length === 0 || params.lines.length === 0) {
-        return []
-      }
-      try {
-        // date parsing
-        const fromDateArr = params.fromDate.split('.')
-        const fromDate = `${fromDateArr[2]}-${fromDateArr[1]}-${fromDateArr[0]}`
-        const toDateArr = params.toDate.split('.')
-        const toDate = `${toDateArr[2]}-${toDateArr[1]}-${toDateArr[0]}`
-        let url = `http://localhost:5000/statistics?from=${fromDate}&to=${toDate}&${params.sort.value}type=${params.types.toString()}&line=${params.lines.toString()}`
-        console.log(url);
-        if (params.onlyOpenDisturbances) {
-          url += '&active=false'
-        }
 
-        // WICHTIG!!!!! Auf Server-gehosteten Backend unnötig
-        const res = await fetch(url)
-        const data = await res.json()
-        if (!('error' in data)) {
-          return data.statistic
-        }
-      } catch (err) {
-        console.log(err)
-      }
-      return []
-    },
-
-    /**
-     * Überdenken der Response:
-     * Wenn für mehr als 2 Jahre gefiltert wird,
-     * dann soll ein Array von YearData Objekten zurückgegeben
-     * und ein Array von Arrays, welche die MonthData Objekte speichern.
-     * Jedes dieser Array hat einen Jahres Identifikator
-     *
-     */
-    checkMultipleYears (statisticsMap) {
-      // Wird bestehen aus einem Array von {"yearString": year, "amountDisturbances": amountDisturbances} Objekten
-      let statisticsYearly = []
-      let differentYears = -1
-
-      const years = []
-      const disturbances = []
-
-      statisticsMap.forEach(element => {
-        const yearString = String(element.month).substring(0, 4)
-        const amountDisturbance = element.amountDisturbances
-
-        if (!years.includes(yearString)) {
-          years.push(yearString)
-          disturbances.push(amountDisturbance)
-          differentYears++
-        } else {
-          disturbances[differentYears] += amountDisturbance
-        }
-      })
-
-      statisticsYearly = years.map((year, index) => {
-        return { yearString: year, amountDisturbances: disturbances[index] }
-      })
-
-      console.log(differentYears)
-      if (differentYears <= 1) return null
-      else return {years: years, amountDisturbances: disturbances}
-    }
 
   }, 
 }
