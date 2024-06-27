@@ -8,12 +8,12 @@
         transition-next="scale"
         swipeable
         animated
-        control-color="white"
+        control-color="primary"
         navigation
         padding
         arrows
         height="560px"
-        class="bg-primary  shadow-1 rounded-borders"
+        class=""
       >
         <q-carousel-slide
           v-for="(chartTitle, index) in statisticChartData.chartTitles"
