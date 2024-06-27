@@ -7,14 +7,17 @@
     <div class="row">
       <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
       <div class="col-md-8 col-12">
-
+        
         <StatisticChart chartTitle="Statistik" ref="chartPanel" />
 
-        <!-- <ChartCarousel />  -->
+        <ChartCarousel v-show="showYearlyChart" ref="chartCarousel"/>
 
         <StatisticChart chartTitle="Statistik Jahre"
           v-show="showYearlyChart" ref="yearChartPanel" />
+
+
       </div>
+
     </div>
   </div>
 </main>
@@ -28,37 +31,53 @@ import FilterSortPanel from '@/components/FilterSortPanel.vue'
 import StatisticChart from '@/components/StatisticChart.vue'
 import ChartCarousel from '@/components/ChartCarousel.vue'
 
+
+
 export default {
   name: 'StatisticsView',
 
+  data () {
+    return {
+      showYearlyChart: false,
+      showCarousel: false
+
+    }
+  },
   components: {
     HeaderNav,
     FilterSortPanel,
-    StatisticChart
+    StatisticChart,
+    ChartCarousel
   },
+
   methods: {
     async updateStatistics (params) {
       this.$refs.chartPanel.setErrorValues()
 
       const statisticsMap = await this.fetchStatistics(params)
 
-      console.table(statisticsMap.statistic)
       this.$refs.chartPanel.setChartDataMap(statisticsMap.statistic)
       
 
       if(statisticsMap.yearStatistic != null){
         this.setYearChartData(statisticsMap.yearStatistic)
+      } else{
+        this.showYearlyChart = false
       }
 
       if(statisticsMap.yearStatistic != null) {
+        this.showCarousel = true 
+        this.$refs.chartCarousel.setMonthByYearChartData(statisticsMap.monthByYearStatistic)
         // Set ChartCarousel Data
+      } else {
+        this.showCarousel = false
       }
 
     },
 
     async fetchStatistics (params) {
       if (params.types.length === 0 || params.lines.length === 0) {
-        return []
+        return {}
       }
       try {
         // date parsing
@@ -81,7 +100,7 @@ export default {
       } catch (err) {
         console.log(err)
       }
-      return []
+      return {}
     },
 
     getLineColor (id, type) {
@@ -106,12 +125,6 @@ export default {
       } else {
         this.showYearlyChart = false
       }
-    }
-  },
-
-  data () {
-    return {
-      showYearlyChart: false
     }
   }
 }

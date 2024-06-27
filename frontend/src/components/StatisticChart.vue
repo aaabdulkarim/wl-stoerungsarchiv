@@ -2,7 +2,7 @@
     <div class="q-pa-md ">
         <div class="bg-white shadow-4 rounded-borders q-pa-md">
 
-            <h2>{{ chartTitle }}</h2>
+            <h2>{{ this.$props.chartTitle }}</h2>
             <div v-if="loading" class="row justify-center">
                 <q-spinner size="md" color="primary" />
             </div>
@@ -72,14 +72,20 @@ export default {
   props: {
     chartTitle : String,
     xAxisData : Array,
-    yAxisData : Array
+    yAxisData : Array,
+    chartMapData: Object
   },
   components: {
     apexchart: VueApexCharts
   },
   mounted() {
+    console.log("HALLo")
+    console.log( this.$props)
     if(this.$props.xAxisData !== undefined && this.$props.yAxisData !== undefined){
       this.setChartData(this.$props.xAxisData, this.$props.yAxisData)
+    } else if(this.$props.chartMapData !== undefined){
+      this.setChartDataMap(this.$props.chartMapData)
+      
     }
   },
   methods: {
@@ -103,7 +109,7 @@ export default {
     },
 
     setChartDataMap(statisticsMap) {
-
+      
       const xAxisData = statisticsMap.map((xyUnit) => this.getCategoryString(xyUnit.month))
       const yAxisData = statisticsMap.map((xyUnit) => xyUnit.amountDisturbances)
       
