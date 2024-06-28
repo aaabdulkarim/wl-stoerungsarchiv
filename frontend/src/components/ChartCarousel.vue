@@ -13,7 +13,7 @@
         padding
         arrows
         height="560px"
-        class=""
+        class="custom-carousel"
       >
         <q-carousel-slide
           v-for="(chartTitle, index) in statisticChartData.chartTitles"
@@ -67,4 +67,8 @@ export default {
 }
 </script>
 
-<style></style>
+<style>
+.custom-carousel {
+  background-color: transparent !important;
+}
+</style>

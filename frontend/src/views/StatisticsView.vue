@@ -8,12 +8,13 @@
       <FilterSortPanel class="col-md-4 col-12" :getLineColor="getLineColor" @change="updateStatistics" />
       <div class="col-md-8 col-12">
 
-        <StatisticChart chartTitle="Statistik" ref="chartPanel" />
 
         <ChartCarousel v-show="showYearlyChart" ref="chartCarousel"/>
 
         <StatisticChart chartTitle="Statistik Jahre"
           v-show="showYearlyChart" ref="yearChartPanel" />
+
+        <StatisticChart chartTitle="Statistik" ref="chartPanel" />
 
       </div>
 
