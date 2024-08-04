@@ -14,7 +14,7 @@
             </div>
 
             <div v-else-if="!noValues || !loading">
-                <apexchart type="bar" :options="options" :series="series"></apexchart>
+                <apexchart  type="bar" :options="options" :series="series"></apexchart>
             </div>
         </div>
     </div>

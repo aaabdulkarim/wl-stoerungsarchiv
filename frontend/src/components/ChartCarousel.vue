@@ -15,10 +15,13 @@
         height="560px"
         class="custom-carousel"
       >
+          <!-- Bei Charts wo alle Jahre angezeigt werden, werden die Labels nicht gescheit angezeigt
+           Wenn man das Fenster resized passt sich die größe an -->
         <q-carousel-slide
           v-for="(chartTitle, index) in statisticChartData.chartTitles"
           :key="index"
           :name="index"
+          class="slide-carousel"
         >
           <StatisticChart
             :chartTitle="chartTitle + ' Übersicht'"
@@ -51,18 +54,12 @@ export default {
         StatisticChart,
     },
     methods: {
-        setMonthByYearChartData(monthByYearStatistic){
-            this.statisticChartData = {
-                chartTitles : Object.keys(monthByYearStatistic),
-                chartDataMaps : Object.values(monthByYearStatistic)
-            }
-
-            console.log(this.statisticChartData);
-
-
+      setMonthByYearChartData(monthByYearStatistic){
+        this.statisticChartData = {
+            chartTitles : Object.keys(monthByYearStatistic),
+            chartDataMaps : Object.values(monthByYearStatistic)
         }
-
-
+      }
     }
 }
 </script>
@@ -70,5 +67,8 @@ export default {
 <style>
 .custom-carousel {
   background-color: transparent !important;
+}
+
+.slide-carousel {
 }
 </style>
