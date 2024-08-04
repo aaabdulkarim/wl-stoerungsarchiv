@@ -106,5 +106,9 @@ fun updateDb(): Unit = runBlocking {
             )
         }
     }
+
+    // Evaluate Statistics
+    println(dao.evaluateStatistics())
+
     dao.closeDisturbancesExcept(notClosedDisturbances)
 }

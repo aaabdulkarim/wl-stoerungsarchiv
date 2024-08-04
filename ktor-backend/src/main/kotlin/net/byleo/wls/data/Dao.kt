@@ -1,12 +1,16 @@
 package net.byleo.wls.data
 
 import net.byleo.wls.models.*
+import net.byleo.wls.models.Disturbances.startTime
 import net.byleo.wls.util.DisturbanceFilter
 import net.byleo.wls.util.OrderType
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
+import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Month
 import java.time.format.DateTimeFormatter
 
 private val LINE_ORDER: Array<Pair<Expression<*>, SortOrder>> = arrayOf(
@@ -81,6 +85,68 @@ class Dao {
         Lines.selectAll().orderBy(*LINE_ORDER).map(::resultRowToLine)
     }
 
+    // Supposed to evaluate Statistics
+    suspend fun evaluateStatistics() {
+
+        val startOfTrackingDate = LocalDateTime.of(2022, Month.JANUARY, 1, 0, 0)
+
+
+        val disturbances = getDisturbances(
+            DisturbanceFilter(
+                lines = emptyList(),
+                types = emptyList(),
+                active = true,
+                // From Start of tracking Disturbances
+                from = startOfTrackingDate,
+                // Vielleicht statt LocalDateTime eine Alternative benutzen
+                // Eventuell kann die LocalDateTime ein fehlerhaftes Resultat liefern,
+                // Falls der Rechner auf dem das Programm läuft falsch konfiguriert ist.
+                to = LocalDateTime.now(),
+                order = OrderType.START,
+                desc = true
+            )
+        )
+
+        val disturbanceMonthData = mutableListOf<DisturbanceMonthData>()
+
+        disturbances.forEach { row ->
+            val monthsOnly = disturbanceMonthData.map { it.month }
+
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
+            val rowToString = row.startTime.toString()
+            val monthString = LocalDateTime.parse(rowToString, DateTimeFormatter.ISO_DATE_TIME).format(formatter)
+
+            // Jahr und Monat wird geparst
+            val (year, month) = monthString.split("-").map { it.toInt() }
+
+            // Individueller Key für jeden Monat eines bestimmten Jahres
+            // z.B 202402 =  Jahr 2024 Februar
+            val monthKey = year * 100 + month
+            val monthKeyStr = monthKey.toString()
+
+            val disturbanceIndex = monthsOnly.indexOf(monthKeyStr)
+
+            if (disturbanceIndex == -1) {
+                disturbanceMonthData.add(DisturbanceMonthData(0, monthKeyStr))
+            } else {
+                disturbanceMonthData[disturbanceIndex].amountDisturbances++;
+            }
+        }
+
+        transaction {
+                disturbanceMonthData.forEach {
+                        data -> StatisticsTable.insert {
+                    it[StatisticsTable.amountDisturbances] = data.amountDisturbances;
+                    it[StatisticsTable.month] = data.month
+                }
+            }
+        }
+
+
+
+    }
+
+    // Supposed to get them from the Table
     suspend fun getStatistic(
         filter: DisturbanceFilter = DisturbanceFilter()
     ) = Database.dbQuery {

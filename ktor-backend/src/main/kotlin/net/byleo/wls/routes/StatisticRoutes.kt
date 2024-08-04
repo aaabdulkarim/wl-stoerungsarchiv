@@ -36,6 +36,8 @@ fun Route.statisticRouting() {
                     )
                 }
             } ?: LocalDate.now().atTime(LocalTime.MIN)
+
+
             val to = call.request.queryParameters["to"]?.let {
                 try { LocalDate.parse(it, formatter).atTime(LocalTime.MAX) } catch (e: DateTimeParseException) {
                     return@get call.respond(

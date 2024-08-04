@@ -10,7 +10,6 @@
 
         <StatisticChart chartTitle="Statistik" ref="chartPanel" />
 
-
         <StatisticChart chartTitle="Statistik Jahre"
           v-show="showYearlyChart" ref="yearChartPanel" />
 
